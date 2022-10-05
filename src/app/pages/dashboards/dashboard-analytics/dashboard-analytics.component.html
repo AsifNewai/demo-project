@@ -1,0 +1,275 @@
+<vex-page-layout @stagger>
+
+    <vex-page-layout-header class="pb-10" fxLayout="column" fxLayoutAlign="center start">
+      <div class="w-full flex flex-col sm:flex-row justify-between">
+        <div>
+          <h1 class="title mt-0 mb-1">Dasnboard</h1>
+          <vex-breadcrumbs [crumbs]="['Dasnboard','Analytics']"></vex-breadcrumbs>
+        </div>
+      </div>
+    </vex-page-layout-header>
+    <vex-page-layout-content class="-mt-4" >
+<!-- search and filter -->
+<div class="card bg-app-bar px-6 h-16 border-b sticky left-0" fxLayout="row" >   
+    <div class="bg-card rounded-full border px-4" fxFlex="400px" fxFlex.lt-md="auto" fxLayout="row"
+      fxLayoutAlign="start center">
+      <input #search [formControl]="searchCtrl" class="px-4 py-3 border-0 outline-none w-full bg-transparent" placeholder="type here to search" type="search" [matAutocomplete]="auto"/>
+      <mat-autocomplete #auto="matAutocomplete">
+        <mat-option *ngIf="isLoading">Loading...</mat-option>
+        <ng-container *ngIf="!isLoading">   
+            <mat-option *ngFor="let data of filteredOptions | async"
+                [value]="data.name">
+                <span class="align-middle float-left"> {{data.name}}</span>
+            </mat-option>
+        </ng-container>
+    </mat-autocomplete>
+    </div>
+
+    <button class="ml-7 mt-3" color="primary" fxFlex="none"(click)="searchValue(search.value)" mat-mini-fab matTooltip="Search customer" type="button">
+        <ic-icon [icIcon]="icSearch" size="20px"></ic-icon>
+    </button>
+    <span fxFlex></span>
+  </div>
+
+  <div>
+    <div fxLayout="row" class="pt-6 ml-6">
+      <h4 class="title m-0" fxFlex="auto">Call Contact</h4>
+    </div>
+  
+    <div fxLayout="row" fxLayoutAlign="center center" class="mt-2"> 
+      <table @stagger [dataSource]="dataSource" class="w-full" mat-table mat-table matSort
+          #matSortCitizen="matSort">
+
+                    <!-- Checkbox Column -->
+                    <ng-container matColumnDef="checkbox">
+                      <th mat-header-cell *matHeaderCellDef></th>
+                      <td mat-cell *matCellDef="let row">
+                        <mat-checkbox (click)="$event.stopPropagation()" color="primary"
+                                      (change)="$event ? selection.toggle(row) : null"
+                                      (change)="onChecked(row,$event.checked)"
+                                      [checked]="selection.isSelected(row)">
+                        </mat-checkbox>
+                      </td>
+                    </ng-container>
+
+          <!-- Text Columns -->
+          <ng-container *ngFor="let column of columnsCitizen; trackBy: trackByProperty">
+            <ng-container *ngIf="column.type === 'text'"
+              [matColumnDef]="column.property">
+              <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header>
+                {{column.label}}</th>
+              <td *matCellDef="let row" [ngClass]="column.cssClasses" mat-cell>{{
+                  row[column.property]}}
+              </td>
+            </ng-container>
+
+            <ng-container *ngIf="column.type === 'number'"
+            [matColumnDef]="column.property">
+            <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header>
+              {{column.label}}</th>
+            <td *matCellDef="let row" [ngClass]="column.cssClasses" mat-cell>{{
+                row[column.property]}}
+            </td>
+          </ng-container>
+
+          </ng-container>
+
+          <tr *matHeaderRowDef="visibleColumnsCitizen" mat-header-row></tr>
+          <tr *matRowDef="let row; columns: visibleColumnsCitizen;" @fadeInUp
+            class="hover:bg-hover trans-ease-out cursor-pointer" mat-row>
+          </tr>
+      </table>
+    </div>
+    <table>
+      <tr *ngIf="!dataSource.data.length">
+        <td style="text-align: center;" [attr.colspan]="columnsCitizen.length">
+          No Record Found
+        </td>
+      </tr>
+    </table>
+    <mat-paginator #matPaginatorTaxation="matPaginator" (page)="pageChanged($event)" [length]="length" [pageSizeOptions]="pageSizeOptions" [pageSize]="pageSize"
+      class="sticky left-0">
+    </mat-paginator>
+  </div>
+
+
+
+<mat-card *ngIf="showContent" class="mt-5">
+  
+  <mat-dialog-content class="mt-3">
+    <div @fadeInUp  class="px-6" >
+      <div fxLayout="row" class="pt-4">
+          <h4 class="title m-0" fxFlex="auto">Entity Details</h4>
+      </div>
+      <mat-divider class="text-border"></mat-divider>
+  
+      <vex-page-layout-content class="w-full">
+          <div @fadeInUp class="w-full" fxLayout="column">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-1 pt-2">
+              <div class="flex-1">
+                  <mat-label><b>{{'Id'}} : </b>{{row?.position}}</mat-label>
+                </div>
+              <div class="flex-1">
+                <mat-label><b>{{'Name'}} : </b>{{row?.name}}</mat-label>
+              </div>
+              <div class="flex-1">
+                <mat-label><b>{{'Email'}} : </b>{{row?.email}}</mat-label>
+              </div>
+              <div class="flex-1">
+                <mat-label><b>{{'Contact'}} :</b>
+                  {{row?.contactNumber}} </mat-label>
+              </div>
+              <div class="flex-1">
+                <mat-label><b>{{'Symbol'}} :</b>
+                  {{row?.symbol}} </mat-label>
+              </div>
+            </div>
+          </div>
+        </vex-page-layout-content>
+  
+      <mat-divider class="text-border"></mat-divider>
+      <div fxLayout="row" class="pt-4">
+        <h5 class="title m-0" fxFlex="auto">Enter Call Details</h5>
+      </div>
+      <mat-divider class="text-border"></mat-divider>
+      <form [formGroup]="filterForm">
+        <div class="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-4 grid-cols-1 gap-2 pt-4">
+          <mat-form-field class="example-full-width" appearance="fill">
+            <mat-label>Call ID</mat-label>
+            <input formControlName="id" type="number" matInput placeholder="Call id" value="">
+          </mat-form-field>
+  
+          <mat-form-field appearance="fill">
+            <mat-label>Source</mat-label>
+            <mat-select formControlName="sourceId">
+              <mat-option  *ngFor="let food of foods" [value]="food.value">
+                {{food.viewValue}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Type</mat-label>
+            <mat-select formControlName="type">
+              <mat-option (click)="getCategoryList(data)"  *ngFor="let data of typeList" [value]="data.type">
+                {{data.type}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+
+        <mat-form-field class="flex-1">
+          <mat-label>Category</mat-label>
+          <mat-select formControlName="category">
+                <mat-option  *ngFor="let category of categoryList" [value]="category">
+                  {{category}}
+                </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        </div>
+  
+        <div class="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-4 grid-cols-1 gap-2 pt-4">
+  
+          <mat-form-field appearance="fill" class="example-form-field">
+            <mat-label>Received Date</mat-label>
+            <input formControlName="receivedDate" matInput [matDatepicker]="datepicker">
+            <mat-hint>MM/DD/YYYY</mat-hint>
+            <mat-datepicker-toggle matSuffix [for]="datepicker"></mat-datepicker-toggle>
+            <mat-datepicker #datepicker>
+              <mat-datepicker-actions>
+                <button mat-button matDatepickerCancel>Cancel</button>
+                <button mat-raised-button color="primary" matDatepickerApply>Apply</button>
+              </mat-datepicker-actions>
+            </mat-datepicker>
+          </mat-form-field>
+  
+          <mat-form-field appearance="fill" class="example-form-field">
+            <mat-label>Modified Date</mat-label>
+            <input formControlName="modifiedDate" matInput [matDatepicker]="datepicker2">
+            <mat-hint>MM/DD/YYYY</mat-hint>
+            <mat-datepicker-toggle matSuffix [for]="datepicker2"></mat-datepicker-toggle>
+            <mat-datepicker #datepicker2>
+              <mat-datepicker-actions>
+                <button mat-button matDatepickerCancel>Cancel</button>
+                <button mat-raised-button color="primary" matDatepickerApply>Apply</button>
+              </mat-datepicker-actions>
+            </mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field class="example-full-width" appearance="fill">
+            <mat-label>Modified By</mat-label>
+            <input formControlName="modifiedBy" type="text" matInput placeholder="Modified by" value="">
+          </mat-form-field>
+
+          <mat-form-field class="example-full-width" appearance="fill">
+            <mat-label>Closed By</mat-label>
+            <input formControlName="closedBy" type="text" matInput placeholder="Closed by" value="">
+          </mat-form-field>
+  
+        </div>
+  
+        <div class="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-4 grid-cols-1 gap-2 pt-4">
+  
+          <mat-form-field appearance="fill" class="example-form-field">
+            <mat-label>Closed Date</mat-label>
+            <input formControlName="closedDate" matInput [matDatepicker]="datepicker3">
+            <mat-hint>MM/DD/YYYY</mat-hint>
+            <mat-datepicker-toggle matSuffix [for]="datepicker3"></mat-datepicker-toggle>
+            <mat-datepicker #datepicker3>
+              <mat-datepicker-actions>
+                <button mat-button matDatepickerCancel>Cancel</button>
+                <button mat-raised-button color="primary" matDatepickerApply>Apply</button>
+              </mat-datepicker-actions>
+            </mat-datepicker>
+          </mat-form-field>
+  
+          <!-- <mat-form-field class="example-full-width" appearance="fill">
+            <mat-label>Contact ID</mat-label>
+            <input formControlName="contactId" type="number" matInput placeholder="Contact id" value="">
+          </mat-form-field> -->
+  
+  
+          <mat-form-field class="example-full-width" appearance="fill">
+            <mat-label>Created By</mat-label>
+            <input formControlName="createdBy" type="text" matInput placeholder="Created by" value="">
+          </mat-form-field>
+
+            
+          <mat-form-field class="example-full-width" appearance="fill">
+            <mat-label>Resolution</mat-label>
+            <textarea formControlName="resolution" type="text" matInput placeholder="Resolution" value=""></textarea>
+          </mat-form-field>
+  
+          <mat-form-field class="example-full-width" appearance="fill">
+            <mat-label>Description</mat-label>
+            <textarea formControlName="description" type="text" matInput placeholder="Description" value=""></textarea>
+          </mat-form-field>
+  
+        </div>
+  
+        <div class="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-4 grid-cols-1 gap-2">
+          <mat-checkbox class="example-margin ml-4" formControlName="isActive" >is Active</mat-checkbox>
+        </div>
+
+      </form>
+    </div>
+  </mat-dialog-content>
+
+  <div class="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-5 grid-cols-1 gap-2 pt-4">
+    <div class="flex-1"></div>
+    <div class="flex-1"></div>
+    <div class="flex-1"></div>
+    <div class="flex-1"></div>
+    <div class="flex-1">
+      <mat-dialog-actions align="end">
+        <button mat-button mat-dialog-close type="button">Cancel</button>
+        <button color="primary" mat-button type="button"  [disabled]="!filterForm.valid">Save</button>
+      </mat-dialog-actions>
+    </div>
+  </div>
+</mat-card>
+
+</vex-page-layout-content>
+
+</vex-page-layout>

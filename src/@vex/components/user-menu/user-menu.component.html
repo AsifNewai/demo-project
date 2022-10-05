@@ -1,0 +1,21 @@
+<div class="vex-user-menu">
+  <a (click)="close()"
+     [routerLink]="['/']"
+     class="vex-user-menu-item"
+     matRipple
+     matRippleColor="rgb(var(--color-primary), 0.1)">
+    <mat-icon class="vex-user-menu-item__icon icon-sm" svgIcon="mat:account_circle"></mat-icon>
+    <div class="vex-user-menu-item__label">Your Profile</div>
+  </a>
+  
+  <div class="border-b border-divider mx-4"></div>
+
+  <a (click)="close()"
+     [routerLink]="['/']"
+     class="vex-user-menu-item"
+     matRipple
+     matRippleColor="rgb(var(--color-primary), 0.1)">
+    <mat-icon class="vex-user-menu-item__icon icon-sm" svgIcon="mat:logout"></mat-icon>
+    <div class="vex-user-menu-item__label">Sign Out</div>
+  </a>
+</div>
